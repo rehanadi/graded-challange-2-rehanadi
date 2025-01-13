@@ -1,0 +1,19 @@
+server:
+  port: 50051
+  host: "0.0.0.0"
+
+database:
+  host: "localhost"
+  port: 5432
+  user: "postgres"
+  password: "12345"
+  dbname: "bookmanagement"
+  sslmode: "disable"
+
+jwt:
+  secret: "secret"
+  expiration: 24h # 24 hours
+
+scheduler:
+  overdue_check: "@hourly"
+  borrow_duration: 336h # 14 days

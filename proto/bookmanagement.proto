@@ -1,0 +1,157 @@
+syntax = "proto3";
+
+package bookmanagement;
+
+option go_package = "pb/bookmanagement";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+// AuthService handles user authentication
+service AuthService {
+  // Register creates a new user account
+  rpc Register(RegisterRequest) returns (RegisterResponse) {}
+  
+  // Login authenticates a user and returns a JWT token
+  rpc Login(LoginRequest) returns (LoginResponse) {}
+}
+
+// BookService handles book management operations
+service BookService {
+  // CreateBook adds a new book to the system
+  rpc CreateBook(CreateBookRequest) returns (BookResponse) {}
+  
+  // GetBook retrieves a book by ID
+  rpc GetBook(GetBookRequest) returns (BookResponse) {}
+  
+  // UpdateBook modifies an existing book's details
+  rpc UpdateBook(UpdateBookRequest) returns (BookResponse) {}
+  
+  // DeleteBook removes a book from the system
+  rpc DeleteBook(DeleteBookRequest) returns (google.protobuf.Empty) {}
+  
+  // ListBooks retrieves a list of books with pagination
+  rpc ListBooks(ListBooksRequest) returns (ListBooksResponse) {}
+}
+
+// BorrowService handles book borrowing operations
+service BorrowService {
+  // BorrowBook marks a book as borrowed by a user
+  rpc BorrowBook(BorrowBookRequest) returns (BorrowResponse) {}
+  
+  // ReturnBook marks a borrowed book as returned
+  rpc ReturnBook(ReturnBookRequest) returns (BorrowResponse) {}
+  
+  // ListBorrowedBooks gets all books borrowed by a user
+  rpc ListBorrowedBooks(ListBorrowedBooksRequest) returns (ListBorrowedBooksResponse) {}
+}
+
+// Auth related messages
+message RegisterRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message RegisterResponse {
+  string id = 1;
+  string username = 2;
+  string token = 3;
+}
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string token = 1;
+  UserInfo user = 2;
+}
+
+message UserInfo {
+  string id = 1;
+  string username = 2;
+}
+
+// Book related messages
+message Book {
+  string id = 1;
+  string title = 2;
+  string author = 3;
+  google.protobuf.Timestamp published_date = 4;
+  string status = 5; // Available, Borrowed, Overdue
+  string user_id = 6; // ID of user who currently has the book
+}
+
+message CreateBookRequest {
+  string title = 1;
+  string author = 2;
+  google.protobuf.Timestamp published_date = 3;
+}
+
+message GetBookRequest {
+  string id = 1;
+}
+
+message UpdateBookRequest {
+  string id = 1;
+  string title = 2;
+  string author = 3;
+  google.protobuf.Timestamp published_date = 4;
+}
+
+message DeleteBookRequest {
+  string id = 1;
+}
+
+message ListBooksRequest {
+  int32 page = 1;
+  int32 per_page = 2;
+  string status = 3; // Optional filter by status
+}
+
+message ListBooksResponse {
+  repeated Book books = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 per_page = 4;
+}
+
+message BookResponse {
+  Book book = 1;
+}
+
+// Borrow related messages
+message BorrowedBook {
+  string id = 1;
+  string book_id = 2;
+  string user_id = 3;
+  google.protobuf.Timestamp borrowed_date = 4;
+  google.protobuf.Timestamp return_date = 5;
+  Book book = 6;
+}
+
+message BorrowBookRequest {
+  string book_id = 1;
+}
+
+message ReturnBookRequest {
+  string borrow_id = 1;
+}
+
+message BorrowResponse {
+  BorrowedBook borrowed_book = 1;
+}
+
+message ListBorrowedBooksRequest {
+  int32 page = 1;
+  int32 per_page = 2;
+  bool include_returned = 3; // Whether to include returned books
+}
+
+message ListBorrowedBooksResponse {
+  repeated BorrowedBook borrowed_books = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 per_page = 4;
+}
