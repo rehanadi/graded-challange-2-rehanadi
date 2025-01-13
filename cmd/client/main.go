@@ -5,8 +5,10 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -16,8 +18,16 @@ import (
 )
 
 func main() {
+	// Load environment variables
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
 	// Connect to gRPC server
-	conn, err := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	serverUrl := os.Getenv("SERVER_URL")
+	serverPort := os.Getenv("SERVER_PORT")
+	conn, err := grpc.Dial(serverUrl+":"+serverPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect to gRPC server: %v", err)
 	}
@@ -84,5 +94,9 @@ func main() {
 	}
 
 	// Start server
-	e.Logger.Fatal(e.Start(":8080"))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = os.Getenv("CLIENT_PORT")
+	}
+	e.Logger.Fatal(e.Start(":" + port))
 }

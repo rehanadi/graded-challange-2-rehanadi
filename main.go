@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"time"
 
 	"book-management-system/internal/auth"
@@ -12,6 +13,7 @@ import (
 	"book-management-system/internal/service"
 	pb "book-management-system/pb"
 
+	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"gorm.io/driver/postgres"
@@ -19,7 +21,14 @@ import (
 )
 
 func initDB() (*gorm.DB, error) {
-	dsn := "host=localhost user=postgres password=12345 dbname=bookmanagement port=5432 sslmode=disable"
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASS"),
+		os.Getenv("DB_NAME"),
+		os.Getenv("DB_PORT"),
+	)
+
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %v", err)
@@ -35,6 +44,12 @@ func initDB() (*gorm.DB, error) {
 }
 
 func main() {
+	// Load environment variables
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
 	// Initialize database
 	db, err := initDB()
 	if err != nil {
@@ -70,7 +85,8 @@ func main() {
 	reflection.Register(server)
 
 	// Start listening
-	lis, err := net.Listen("tcp", ":50051")
+	port := os.Getenv("SERVER_PORT")
+	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
